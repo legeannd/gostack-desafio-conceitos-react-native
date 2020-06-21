@@ -15,18 +15,17 @@ import api from './services/api';
 export default function App() {
   const [repositories, setRepositories] = useState([]);
 
+  //Função useEffect retorna os repositórios cadastrados no back-end
+
   useEffect(() => {
     api.get('repositories').then(response => {
-
-      let repository = response.data;
-      for (let i = 0; i< response.data.length; i++){
-        let techArray = repository[i].techs.split(', ');
-        repository[i].techs = techArray;
-      }
-
-      setRepositories(repository);
+      console.log(response.data);
+      setRepositories(response.data);
     })
   }, []);
+
+  /*Função handleLikeRepository pega a resposta do servidor e altera na lista de repositórios
+  com a quantidade de likes atualizada, sem desrespeitar o princípio da imutabilidade*/
 
   async function handleLikeRepository(id) {
 
@@ -34,26 +33,26 @@ export default function App() {
 
     const repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-    console.log(repositories[repositoryIndex])
-    console.log(response.data);
+    const updatedRepositories = [...repositories];
 
-    repositories[repositoryIndex].likes = response.data.likes;
+    updatedRepositories[repositoryIndex] = response.data;
     
     console.log(repositories[repositoryIndex]);
-    setRepositories(repositories);
+    setRepositories(updatedRepositories);
   }
 
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
       <SafeAreaView style={styles.container}>
+        
+        {/* Retorna os componentes de acordo com a lista de repositórios */}
         <FlatList
           data={repositories}
           keyExtractor={repository => repository.id}
           renderItem={({ item: repository }) => (
             <View style={styles.repositoryContainer}>
               <Text style={styles.repository}>{repository.title}</Text>
-
               <View style={styles.techsContainer}>
                 {repository.techs.map(tech => (
                   <Text style={styles.tech} key={tech}>
@@ -65,7 +64,6 @@ export default function App() {
               <View style={styles.likesContainer}>
                 <Text
                   style={styles.likeText}
-                  // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
                   testID={`repository-likes-${repository.id}`}
                 >
                   {repository.likes} curtidas
@@ -75,7 +73,6 @@ export default function App() {
               <TouchableOpacity
                 style={styles.button}
                 onPress={() => handleLikeRepository(repository.id)}
-                // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
                 testID={`like-button-${repository.id}`}
               >
                 <Text style={styles.buttonText}>Curtir</Text>
